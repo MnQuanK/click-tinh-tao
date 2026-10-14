@@ -4,168 +4,331 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Click tỉnh táo</title>
+<title>Thám tử không gian mạng | Click tỉnh táo</title>
 <style>
+:root{font-family:Arial,sans-serif;color:#182338;background:#f1f5fb}
 *{box-sizing:border-box}
-body{margin:0;font-family:Arial,sans-serif;background:#f2f5fb;color:#172033}
-main{max-width:720px;margin:35px auto;padding:20px}
-.card{background:white;padding:25px;border-radius:18px;box-shadow:0 5px 25px #0000000c}
-h1{color:#2349a6;margin-bottom:8px}
-.muted{color:#657087;line-height:1.6}
-button{cursor:pointer;border:0;border-radius:10px;padding:13px 17px;font-size:15px}
-.primary{background:#2349a6;color:white;width:100%;margin-top:15px}
-.option{display:block;width:100%;text-align:left;background:#f0f3fa;margin:10px 0}
-.option:hover{background:#dce7ff}
-.option:disabled{cursor:default;opacity:1}
-#feedback{margin-top:18px;padding:15px;background:#edf5ff;border-radius:10px;line-height:1.6}
-.hidden{display:none}
-.bar{height:8px;background:#e4e8f1;border-radius:9px;overflow:hidden}
-#progress{height:100%;background:#3564d4;width:0}
+body{margin:0}
+header{background:#142b52;color:white;padding:18px 16px}
+header .inner,main{max-width:980px;margin:auto}
+header h1{margin:0;font-size:24px}
+header p{margin:7px 0 0;color:#d7e5ff}
+main{padding:20px 14px 50px}
+.card{background:white;border-radius:16px;padding:20px;margin-bottom:16px;box-shadow:0 5px 22px #18233812}
+h2,h3{margin-top:0}
+p{line-height:1.6}
+.muted{color:#68758b}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.stats{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px}
+.stat{background:#e6efff;border-radius:12px;padding:10px 14px;font-weight:bold}
+button,select,input{font:inherit}
+button{cursor:pointer;border:0;border-radius:10px;padding:12px 15px;background:#e9eef7;color:#182338}
+button:hover{filter:brightness(.97)}
+button:disabled{opacity:.5;cursor:wait}
+.primary{background:#2458d6;color:white;font-weight:bold}
+input,select{padding:12px;border:1px solid #cbd5e1;border-radius:10px;background:white}
+input{min-width:0;flex:1}
+label{font-weight:bold}
+#status{padding:12px;border-radius:10px;background:#edf4ff;white-space:pre-wrap;line-height:1.5}
+#status.error{background:#fff0f0;color:#a51d2d}
+.hidden{display:none!important}
+.message{padding:12px;border-radius:12px;background:#f0f4fa;margin:9px 0;line-height:1.5}
+.message strong{display:block;margin-bottom:5px}
+.clues{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px}
+.clue{border:1px solid #d8e1ef;border-radius:12px;padding:13px}
+.clue.found{border-color:#31956a;background:#effbf5}
+.choice{display:block;width:100%;text-align:left;margin:8px 0;line-height:1.5}
+.choice.selected{outline:2px solid #2458d6}
+#chatLog{max-height:300px;overflow:auto}
+.chatline{padding:10px 12px;border-radius:12px;margin:8px 0;line-height:1.5;white-space:pre-wrap}
+.chatline.player{background:#e6efff;margin-left:12%}
+.chatline.ai{background:#f1f3f7;margin-right:12%}
+footer{text-align:center;color:#68758b;font-size:13px;padding:10px}
+@media(max-width:550px){.card{padding:15px}header h1{font-size:21px}}
 </style>
 </head>
 <body>
+<header>
+  <div class="inner">
+    <h1>🕵️ Thám tử không gian mạng</h1>
+    <p>Click tỉnh táo · Điều tra tin nhắn đáng ngờ, tìm bằng chứng và bảo vệ bản thân.</p>
+  </div>
+</header>
+
 <main>
-<section class="card">
-  <h1>🛡️ Click tỉnh táo</h1>
-  <p class="muted">Trò chơi giúp học sinh THPT nhận diện dấu hiệu lừa đảo trực tuyến.</p>
-  <div id="intro">
-    <p>Hãy đọc tình huống, chọn cách xử lý an toàn và tìm hiểu vì sao.</p>
-    <p class="muted">Đây là tình huống giả lập phục vụ giáo dục.</p>
-    <button class="primary" onclick="startGame()">Bắt đầu chơi</button>
+  <div class="stats">
+    <div class="stat">🪙 Xu: <span id="coins">0</span></div>
+    <div class="stat">📁 Vụ đã giải: <span id="solved">0</span></div>
+    <div class="stat">🔎 Manh mối: <span id="clueCount">0</span></div>
   </div>
-  <div id="game" class="hidden">
-    <p id="counter" class="muted"></p>
-    <div class="bar"><div id="progress"></div></div>
-    <h2 id="question"></h2>
-    <p id="scenario" class="muted"></p>
-    <div id="options"></div>
-    <div id="feedback" class="hidden" aria-live="polite"></div>
-    <button id="next" class="primary hidden" onclick="nextQuestion()">Câu tiếp theo</button>
-  </div>
-  <div id="result" class="hidden">
-    <h2>Hoàn thành!</h2>
-    <h3 id="score"></h3>
-    <p id="summary" class="muted"></p>
-    <button class="primary" onclick="startGame()">Chơi lại</button>
-  </div>
-</section>
+
+  <section class="card" id="startPanel">
+    <h2>Bắt đầu điều tra</h2>
+    <p>AI sẽ tạo tình huống giả lập để mày luyện cách nhận diện lừa đảo. Đọc chứng cứ, hỏi nhân vật và chọn cách xử lý an toàn.</p>
+    <label for="topic">Chọn loại vụ án</label>
+    <div class="row" style="margin-top:8px">
+      <select id="topic" style="flex:1;min-width:220px">
+        <option value="Tin nhắn trúng thưởng giả">Tin nhắn trúng thưởng giả</option>
+        <option value="Tuyển dụng việc nhẹ lương cao">Việc nhẹ lương cao</option>
+        <option value="Giả danh ngân hàng, yêu cầu OTP">Giả danh ngân hàng</option>
+        <option value="Chiếm đoạt tài khoản mạng xã hội">Mất tài khoản mạng xã hội</option>
+        <option value="Lừa đảo mua bán trực tuyến">Mua bán trực tuyến</option>
+        <option value="Giả danh người quen nhờ chuyển tiền">Giả danh người quen</option>
+      </select>
+      <button class="primary" id="startBtn" onclick="startCase()">🚨 Tạo vụ án</button>
+    </div>
+    <p class="muted">Tiến trình điểm được lưu trên trình duyệt này. Tình huống do AI tạo có thể khác nhau mỗi lần chơi.</p>
+  </section>
+
+  <div id="status" role="status">Sẵn sàng. Nhấn “Tạo vụ án” để bắt đầu.</div>
+
+  <section id="casePanel" class="hidden">
+    <div class="card">
+      <p class="muted" id="caseNumber"></p>
+      <h2 id="caseTitle">Vụ án</h2>
+      <p id="caseIntro"></p>
+      <h3>📱 Tin nhắn và lời khai</h3>
+      <div id="messages"></div>
+    </div>
+
+    <div class="card">
+      <h3>🧩 Thu thập manh mối</h3>
+      <p class="muted">Nhấn vào từng manh mối để ghi nhận bằng chứng. Đọc kỹ trước khi kết luận.</p>
+      <div class="clues" id="clues"></div>
+    </div>
+
+    <div class="card">
+      <h3>💬 Hỏi nhân vật</h3>
+      <p class="muted">Đặt câu hỏi để kiểm tra lời khai. Không nhập thông tin cá nhân, mật khẩu hoặc mã OTP thật.</p>
+      <div id="chatLog"></div>
+      <form id="chatForm" class="row">
+        <input id="chatInput" maxlength="500" placeholder="Ví dụ: Vì sao phải chuyển tiền trước?" autocomplete="off" required>
+        <button class="primary" id="sendBtn" type="submit">Gửi câu hỏi</button>
+      </form>
+    </div>
+
+    <div class="card">
+      <h3>⚖️ Kết luận điều tra</h3>
+      <p>Chọn hành động phù hợp nhất với tình huống.</p>
+      <div id="choices"></div>
+      <button class="primary" id="finishBtn" onclick="finishCase()" disabled>Chốt kết luận</button>
+      <div id="result" class="hidden" style="margin-top:18px"></div>
+    </div>
+  </section>
+
+  <section class="card">
+    <h3>🛡️ Nguyên tắc an toàn</h3>
+    <ul>
+      <li>Không cung cấp mật khẩu, mã OTP hoặc thông tin ngân hàng cho người lạ.</li>
+      <li>Không chuyển tiền để nhận thưởng hoặc để được nhận việc.</li>
+      <li>Kiểm tra thông tin qua website, ứng dụng hoặc số điện thoại chính thức.</li>
+      <li>Nếu nghi bị lừa, dừng liên lạc, lưu bằng chứng và báo người lớn đáng tin cậy.</li>
+    </ul>
+  </section>
+  <footer>Trò chơi giáo dục · Tình huống giả lập · Không sử dụng dữ liệu thật</footer>
 </main>
+
 <script>
-const questions = [
-{
-title:"Tin nhắn trúng thưởng",
-scenario:"Một tin nhắn báo bạn trúng thưởng lớn và phải bấm vào đường dẫn trong 10 phút để nhận quà.",
-options:[
-"Bấm ngay để không mất phần thưởng",
-"Không bấm; tự kiểm tra chương trình qua kênh chính thức",
-"Nhập thông tin cá nhân để kiểm tra",
-"Chuyển tiếp tin nhắn cho nhiều người"
-],
-answer:1,
-why:"Phần thưởng bất ngờ và thời hạn gấp có thể tạo áp lực tâm lý. Không bấm đường dẫn chưa xác minh. Hãy tự tìm kênh chính thức của đơn vị được nhắc đến."
-},
-{
-title:"Tuyển dụng việc nhẹ lương cao",
-scenario:"Một tài khoản lạ hứa trả lương cao cho công việc đơn giản, nhưng yêu cầu bạn chuyển tiền trước để kích hoạt hồ sơ.",
-options:[
-"Chuyển một khoản nhỏ để thử",
-"Gửi ảnh căn cước để xác minh",
-"Không chuyển tiền; kiểm tra công ty và thông tin tuyển dụng",
-"Nhờ bạn bè chuyển hộ"
-],
-answer:2,
-why:"Yêu cầu nộp tiền trước để được nhận việc là dấu hiệu cảnh báo. Cần xác minh công ty qua nguồn độc lập và không gửi giấy tờ tùy thân cho tài khoản chưa đáng tin."
-},
-{
-title:"Yêu cầu cung cấp OTP",
-scenario:"Người tự xưng là nhân viên ngân hàng gọi điện, nói tài khoản có vấn đề và yêu cầu đọc mã OTP.",
-options:[
-"Đọc OTP nếu người gọi biết tên mình",
-"Không cung cấp OTP; ngắt cuộc gọi và liên hệ ngân hàng qua kênh chính thức",
-"Gửi ảnh màn hình tin nhắn OTP",
-"Đọc OTP nhưng đổi mật khẩu sau đó"
-],
-answer:1,
-why:"Không cung cấp OTP, mật khẩu hoặc mã xác thực cho người gọi. Hãy tự liên hệ ngân hàng bằng số điện thoại trên thẻ hoặc website chính thức."
-},
-{
-title:"Bạn bè nhờ chuyển tiền",
-scenario:"Tài khoản mạng xã hội của bạn thân nhắn rằng đang gặp việc gấp và cần bạn chuyển tiền ngay. Tài khoản từ chối gọi điện.",
-options:[
-"Chuyển tiền ngay vì là bạn thân",
-"Đăng công khai số tài khoản của bạn ấy",
-"Xác minh qua một kênh khác hoặc liên hệ trực tiếp với bạn",
-"Yêu cầu gửi thêm thông tin cá nhân"
-],
-answer:2,
-why:"Tài khoản có thể bị chiếm đoạt. Hãy xác minh danh tính bằng cuộc gọi hoặc một kênh liên lạc độc lập trước khi chuyển tiền."
+const API = "https://thamthukhonggianmang.ng-huynhmquan-09.workers.dev";
+const $ = id => document.getElementById(id);
+
+let currentCase = null;
+let chosen = null;
+let foundClues = new Set();
+let chatHistory = [];
+let busy = false;
+
+let saved = {};
+try {
+  saved = JSON.parse(localStorage.getItem("clickTinhTaoProgress") || "{}");
+} catch {}
+let coins = Number(saved.coins) || 0;
+let solved = Number(saved.solved) || 0;
+
+function updateStats() {
+  $("coins").textContent = coins;
+  $("solved").textContent = solved;
+  $("clueCount").textContent = foundClues.size;
 }
-];
-
-let index=0, points=0, locked=false;
-
-function startGame(){
- index=0;points=0;locked=false;
- document.getElementById("intro").classList.add("hidden");
- document.getElementById("result").classList.add("hidden");
- document.getElementById("game").classList.remove("hidden");
- render();
+function saveProgress() {
+  localStorage.setItem("clickTinhTaoProgress", JSON.stringify({coins, solved}));
+  updateStats();
+}
+function setStatus(text, error = false) {
+  $("status").textContent = text;
+  $("status").className = error ? "error" : "";
+}
+async function callAPI(path, data) {
+  const response = await fetch(API + path, {
+    method: "POST",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify(data)
+  });
+  const result = await response.json().catch(() => ({}));
+  if (!response.ok || result.error) {
+    throw new Error(result.details || result.error || ("Lỗi HTTP " + response.status));
+  }
+  return result;
+}
+function textElement(tag, text, className) {
+  const el = document.createElement(tag);
+  el.textContent = text || "";
+  if (className) el.className = className;
+  return el;
 }
 
-function render(){
- locked=false;
- const q=questions[index];
- document.getElementById("counter").textContent=
-   `Câu ${index+1}/${questions.length}`;
- document.getElementById("progress").style.width=
-   `${index/questions.length*100}%`;
- document.getElementById("question").textContent=q.title;
- document.getElementById("scenario").textContent=q.scenario;
- document.getElementById("feedback").classList.add("hidden");
- document.getElementById("next").classList.add("hidden");
- const area=document.getElementById("options");
- area.innerHTML="";
- q.options.forEach((option,i)=>{
-   const button=document.createElement("button");
-   button.className="option";
-   button.textContent=String.fromCharCode(65+i)+". "+option;
-   button.onclick=()=>choose(i);
-   area.appendChild(button);
- });
+async function startCase() {
+  if (busy) return;
+  busy = true;
+  $("startBtn").disabled = true;
+  $("casePanel").classList.add("hidden");
+  setStatus("AI đang tạo vụ án. Chờ một chút nhé...");
+  currentCase = null;
+  chosen = null;
+  foundClues = new Set();
+  chatHistory = [];
+  updateStats();
+
+  try {
+    const data = await callAPI("/api/case", {topic: $("topic").value});
+    const c = data.case;
+    if (!c || !c.title || !Array.isArray(c.messages) ||
+        !Array.isArray(c.clues) || !Array.isArray(c.choices)) {
+      throw new Error("AI trả về dữ liệu vụ án chưa đúng định dạng. Hãy thử tạo lại.");
+    }
+    currentCase = c;
+    renderCase(c);
+    $("casePanel").classList.remove("hidden");
+    setStatus("Vụ án đã sẵn sàng. Hãy đọc chứng cứ và bắt đầu điều tra.");
+  } catch (e) {
+    setStatus("Không tạo được vụ án: " + e.message +
+      "\n\nKiểm tra Worker đã Deploy chưa, GEMINI_API_KEY đã được thêm chưa và API Gemini có hoạt động không.", true);
+  } finally {
+    busy = false;
+    $("startBtn").disabled = false;
+  }
 }
 
-function choose(choice){
- if(locked)return;
- locked=true;
- const q=questions[index];
- const buttons=document.querySelectorAll(".option");
- buttons.forEach((b,i)=>b.disabled=true);
- const correct=choice===q.answer;
- if(correct)points++;
- buttons[q.answer].style.background="#d8f5e2";
- if(!correct)buttons[choice].style.background="#ffe1e1";
- const feedback=document.getElementById("feedback");
- feedback.textContent=(correct?"Chính xác! ":"Chưa chính xác. ")
-   +q.why;
- feedback.classList.remove("hidden");
- const next=document.getElementById("next");
- next.textContent=index===questions.length-1?"Xem kết quả":"Câu tiếp theo";
- next.classList.remove("hidden");
+function renderCase(c) {
+  $("caseNumber").textContent = "HỒ SƠ ĐIỀU TRA · " + $("topic").value;
+  $("caseTitle").textContent = c.title;
+  $("caseIntro").textContent = c.intro || "Một tình huống đáng ngờ vừa được báo cáo.";
+  $("messages").replaceChildren();
+  $("clues").replaceChildren();
+  $("choices").replaceChildren();
+  $("chatLog").replaceChildren();
+  $("result").replaceChildren();
+  $("result").classList.add("hidden");
+  $("finishBtn").disabled = true;
+  $("finishBtn").classList.remove("hidden");
+
+  (c.messages || []).forEach(m => {
+    const box = document.createElement("div");
+    box.className = "message";
+    box.append(textElement("strong", m.sender || "Nhân vật"));
+    box.append(textElement("span", m.text || ""));
+    $("messages").append(box);
+  });
+
+  c.clues.forEach((clue, i) => {
+    const btn = document.createElement("button");
+    btn.className = "clue";
+    btn.type = "button";
+    btn.append(textElement("strong", "🔍 " + (clue.title || ("Manh mối " + (i+1)))));
+    btn.append(textElement("p", clue.description || "Bằng chứng cần xem xét."));
+    btn.addEventListener("click", () => {
+      if (!foundClues.has(i)) {
+        foundClues.add(i);
+        btn.classList.add("found");
+        btn.append(textElement("p", "✓ Đã ghi nhận", "muted"));
+        coins += 2;
+        saveProgress();
+        setStatus("Đã ghi nhận manh mối. Hãy cân nhắc ý nghĩa của bằng chứng này.");
+      }
+    });
+    $("clues").append(btn);
+  });
+
+  c.choices.forEach((choice, i) => {
+    const btn = document.createElement("button");
+    btn.className = "choice";
+    btn.type = "button";
+    btn.textContent = String.fromCharCode(65+i) + ". " + (choice.text || "Lựa chọn");
+    btn.addEventListener("click", () => {
+      chosen = i;
+      [...$("choices").children].forEach(b => b.classList.remove("selected"));
+      btn.classList.add("selected");
+      $("finishBtn").disabled = false;
+    });
+    $("choices").append(btn);
+  });
 }
 
-function nextQuestion(){
- index++;
- if(index<questions.length){render();return;}
- document.getElementById("game").classList.add("hidden");
- document.getElementById("result").classList.remove("hidden");
- document.getElementById("progress").style.width="100%";
- document.getElementById("score").textContent=
-   `Điểm số: ${points}/${questions.length}`;
- document.getElementById("summary").textContent=
-   points===questions.length
-   ?"Bạn đã chọn đúng tất cả câu trong lượt chơi này. Hãy tiếp tục cảnh giác với các tình huống mới."
-   :"Hãy đọc lại lời giải thích và thử chơi lần nữa. Trong thực tế, hãy xác minh thông tin trước khi hành động.";
+$("chatForm").addEventListener("submit", async event => {
+  event.preventDefault();
+  if (busy || !currentCase) return;
+  const message = $("chatInput").value.trim();
+  if (!message) return;
+
+  busy = true;
+  $("sendBtn").disabled = true;
+  $("chatInput").value = "";
+  $("chatLog").append(textElement("div", "Mày: " + message, "chatline player"));
+
+  try {
+    const data = await callAPI("/api/chat", {
+      topic: currentCase.title,
+      message,
+      history: chatHistory
+    });
+    const reply = data.reply || "Nhân vật chưa có câu trả lời.";
+    $("chatLog").append(textElement("div", "Nhân vật: " + reply, "chatline ai"));
+    chatHistory.push({role:"user", text:message});
+    chatHistory.push({role:"model", text:reply});
+    chatHistory = chatHistory.slice(-8);
+    $("chatLog").scrollTop = $("chatLog").scrollHeight;
+  } catch (e) {
+    $("chatLog").append(textElement("div", "Lỗi: " + e.message, "chatline ai"));
+  } finally {
+    busy = false;
+    $("sendBtn").disabled = false;
+    $("chatInput").focus();
+  }
+});
+
+function finishCase() {
+  if (!currentCase || chosen === null) return;
+  const choice = currentCase.choices[chosen] || {};
+  const safe = choice.safe === true;
+  const result = $("result");
+  result.replaceChildren();
+  result.append(textElement("h3", safe ? "✅ Xử lý an toàn" : "⚠️ Cần xem lại quyết định"));
+  result.append(textElement("p", "Lựa chọn của mày: " + (choice.text || "")));
+  result.append(textElement("p", choice.feedback || ""));
+  result.append(textElement("h4", "Kết luận vụ án"));
+  result.append(textElement("p", currentCase.verdict || "Hãy xem xét lại các bằng chứng."));
+  result.append(textElement("h4", "Vì sao đây là dấu hiệu đáng ngờ?"));
+  result.append(textElement("p", currentCase.explanation || "Không chia sẻ thông tin nhạy cảm và hãy xác minh qua kênh chính thức."));
+  result.append(textElement("h4", "Cách tự bảo vệ"));
+  const tips = Array.isArray(currentCase.safetyTips) ? currentCase.safetyTips : [];
+  const ul = document.createElement("ul");
+  tips.forEach(t => ul.append(textElement("li", t)));
+  result.append(ul);
+
+  if (safe) {
+    coins += 10;
+    solved += 1;
+    result.append(textElement("p", "🎉 +10 xu vì đã chọn cách xử lý an toàn."));
+  } else {
+    result.append(textElement("p", "Chưa nhận xu thưởng lần này. Hãy đọc giải thích và thử vụ án tiếp theo."));
+  }
+  saveProgress();
+  result.classList.remove("hidden");
+  $("finishBtn").disabled = true;
+  $("finishBtn").classList.add("hidden");
+  setStatus("Đã kết thúc lượt điều tra. Đọc phần giải thích trước khi chơi vụ án tiếp theo.");
 }
+updateStats();
 </script>
 </body>
 </html>
